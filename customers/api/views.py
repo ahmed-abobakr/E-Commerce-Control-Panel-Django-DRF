@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CustomerSerilazer
 from customers.models import Customer
+from .permissions import CustomerServiceUserOrTopManagerUser
 
 
 class CustomerList(mixins.ListModelMixin,
@@ -10,6 +11,7 @@ class CustomerList(mixins.ListModelMixin,
                    generics.GenericAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerilazer
+    permission_class = [CustomerServiceUserOrTopManagerUser]
     
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs) 
@@ -25,6 +27,7 @@ class CustomerDetail(mixins.RetrieveModelMixin,
                    generics.GenericAPIView):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerilazer
+    permission_class = [CustomerServiceUserOrTopManagerUser]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
