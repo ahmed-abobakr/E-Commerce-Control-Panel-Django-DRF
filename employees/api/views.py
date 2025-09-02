@@ -1,14 +1,41 @@
 from rest_framework import generics, mixins
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 from employees.models import Employee
 from .serializers import EmployeeRegisterSerializer, EmployeeSerializer
+from .permissions import TopManagerUser
 
 
 class RegisterEmployee(mixins.CreateModelMixin,
                    generics.GenericAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeRegisterSerializer
+    permission_class = [TopManagerUser]
     
     def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            employee = serializer.save()
+
+            # 🔐 Set is_staff = True for manager roles
+            role = request.data.get("role")
+            if role in ["Customer_Service_Manager", "Top_Manager"]:
+                employee.is_staff = True
+                employee.save()
+
+            # 🔑 Generate JWT tokens
+            refresh = RefreshToken.for_user(employee)
+
+            # 📤 Build response
+            response_data = {
+                "message": "Employee registered successfully",
+                "data": self.get_serializer(employee).data,
+                "tokens": {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                }
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
