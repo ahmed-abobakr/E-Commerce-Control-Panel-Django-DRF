@@ -4,7 +4,8 @@ from employees.models import Employee
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        execlude = ('username', 'password')
+        #execlude = ('username', 'password')
+        fields = '__all__'
         
         
 class EmployeeRegisterSerializer(serializers.ModelSerializer):

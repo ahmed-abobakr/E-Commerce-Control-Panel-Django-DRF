@@ -5,9 +5,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from employees.models import Employee
 from .serializers import EmployeeRegisterSerializer, EmployeeSerializer
 from .permissions import TopManagerUser
+from commerce.utils.base_views import StandardizedResponseMixin
 
 
-class RegisterEmployee(mixins.CreateModelMixin,
+class RegisterEmployee(StandardizedResponseMixin, mixins.CreateModelMixin,
                    generics.GenericAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeRegisterSerializer
@@ -36,6 +37,17 @@ class RegisterEmployee(mixins.CreateModelMixin,
                     "access": str(refresh.access_token),
                 }
             }
-            return Response(response_data, status=status.HTTP_201_CREATED)
+            return self.success_response(data=response_data, status_code=status.HTTP_201_CREATED, message="success")
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return self.error_response(data=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST, message="fail")
+    
+    
+class ListEmployees(StandardizedResponseMixin, mixins.ListModelMixin,
+                    generics.GenericAPIView):
+    queryset = Employee.objects.all()  
+    serializer_class = EmployeeSerializer
+    permission_class = [TopManagerUser] 
+    
+    def get(self, request, *args, **kwargs):
+        data = self.list(request, *args, **kwargs) 
+        return self.success_response(data= data.data, message= "success") 
