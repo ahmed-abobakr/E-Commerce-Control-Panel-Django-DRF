@@ -1,6 +1,8 @@
 from django.db import models
+from django.utils import timezone
 from customers.models import Customer
 from products.models import Product
+from employees.models import Employee
 
 
 class Order(models.Model):
@@ -33,6 +35,8 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_DEFAULT, default=0)
     address = models.CharField(max_length=300)
     payment_status = models.CharField(max_length=50, choices=ORDER_PAYMENT)
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(Employee, on_delete=models.SET_DEFAULT, default=0)
     
     def __str__(self):
         return f"order:{self.id} is {self.status} with payment: {self.payment_status} to {self.customer.first_name} {self.customer.last_name}"
