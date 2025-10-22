@@ -1,5 +1,6 @@
 import os
 import django
+import json
 import random
 from faker import Faker
 
@@ -46,38 +47,31 @@ def create_customers(n=10):
 # Populate Products
 def create_products(categories, n=50):
     employee = Employee.objects.get(role="Customer_Service_Manager")
-    products_names = ["Slim Fit Jeans", "Leather Jacket", "Cotton T-Shirt", "Summer Dress", "Sports Sneakers",
-                      "Wool Scarf", "Baseball Cap", "Formal Blazer", "Denim Skirt", "Running Shorts", "iPhone 14 Pro",
-                      "Samsung Galaxy S23", "Xiaomi Redmi Note 12", "Infinix Hot 30", "Huawei Nova Y90", "Google Pixel 7",
-                      "Phone Tripod Stand", "Wireless Earbuds", "Fast Charging Adapter", "Silicone Phone Case", "Vitamin C Serum",
-                      "Face Moisturizer", "Beard Oil", "Electric Toothbrush", "Aloe Vera Gel", "Herbal Shampoo", "Sunscreen SPF 50",
-                      "Lip Balm Set", "Hair Straightener", "Facial Cleanser", "Samsung 55-inch 4K TV", "LG OLED Smart TV",
-                      "Sony Bravia 50-inch", "TCL Android TV 43-inch", "Hisense 32-inch LED TV", "TV Wall Mount Bracket", "Universal Remote Control",
-                      "TV Sound Bar", "HDMI Cable 3m", "TV Cover Dust Proof", "Newborn Diapers Pack", "Baby Wipes Sensitive", "Baby Stroller 3-in-1",
-                      "Baby Milk Bottle", "Baby Body Wash", "Infant Car Seat", "Pacifier Set", "High Chair for Feeding", "Baby Monitor Camera",
-                      "Cotton Baby Blanket", "Long Grain Rice 5kg", "Sunflower Cooking Oil", "Granulated Sugar 2kg", "Bottled Drinking Water", "Black Tea Bags",
-                      "Tomato Paste Cans", "Laundry Detergent 3L", "Toilet Paper Rolls", "Spaghetti Pack", "Table Salt 500g","Dell Inspiron Laptop",
-                      "Logitech Wireless Mouse", "Mechanical Gaming Keyboard", "USB-C Hub 6-in-1", "External Hard Drive 1TB", "MacBook Pro M2", "Webcam 1080p HD",
-                      "27-inch Monitor", "Desktop Cooling Fan", "Portable SSD 500GB", "Men's Running Shoes", "Dumbbell Set 20kg", "Yoga Mat Non-slip", "Basketball Size 7",
-                      "Football Jersey", "Cycling Helmet", "Skipping Rope", "Tennis Racket", "Resistance Bands", "Swimming Goggles", "PlayStation 5 Console",
-                      "Xbox Series X", "Nintendo Switch OLED", "Gaming Headset RGB", "Gaming Chair Recliner", "PS5 DualSense Controller", "Gaming Desk LED",
-                      "Fortnite V-Bucks Card", "Gaming Mousepad XXL", "Steam Gift Card 50$", "Portable Air Purifier", "Rechargeable Torch", "Wall Clock Modern",
-                      "Electric Kettle", "Mini Sewing Machine", "Smart Watch Band", "USB Rechargeable Fan", "Digital Thermometer", "Water Bottle Stainless Steel", 
-                      "LED Strip Light 5m"]
+
+
+    # Load products from JSON file
+    base_dir = os.path.dirname(__file__)
+    json_path = os.path.join(base_dir, "suggested_products.json")
+    with open(json_path, "r", encoding="utf-8") as f:
+        suggested_products = json.load(f)
+    # Category name to Category object mapping
+    category_map = {cat.name: cat for cat in categories}
+
     products = []
-    for _ in range(n):
-        product = Product.objects.create(
-            title=random.choice(products_names),
-            description=fake.text(max_nb_chars=100),
-            price=round(random.uniform(10.0, 999.9), 2),
-            stock_count=random.randint(70, 100),
-            category=random.choice(categories),
-            brand = fake.text(max_nb_chars=20),
-            created_by= employee
-            
-        )
-        products.append(product)
-    return products    
+    for item in suggested_products:
+        category_obj = category_map.get(item["category"])
+        if category_obj:
+            product = Product.objects.create(
+                title=item["name"],
+                description=item["description"],
+                price=round(random.uniform(50.0, 500.0), 2),
+                stock_count=random.randint(30, 100),
+                category=category_obj,
+                brand=item["brand"],
+                created_by=employee
+            )
+            products.append(product)
+    return products
 
 #Populate Orders
 def create_orders(products, customers, n = 100):

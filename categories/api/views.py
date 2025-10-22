@@ -3,6 +3,7 @@ from categories.models import Category
 from .serializers import CategorySerializer
 from employees.api.permissions import CustomerServiceManagerOrTopManagerUserOrReadOnly
 from commerce.utils.base_views import StandardizedResponseMixin
+from commerce.utils.build_chunks import insert_category_chunks
 
 class CategoryReadOnlyViewSet(StandardizedResponseMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
@@ -33,6 +34,7 @@ class CategoryViewSet(StandardizedResponseMixin, viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
+        insert_category_chunks(response.data)
         return self.success_response(data=response.data, message="success", status_code=201)
 
     def destroy(self, request, *args, **kwargs):

@@ -20,3 +20,26 @@ class OrderItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItems
         fields = ['id', 'quantity', 'order_detail', 'order', 'product', 'product_detail']        
+        
+
+class OrderItemsCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItems
+        fields = ['product', 'quantity']
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    order_items = OrderItemsCreateSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Order
+        fields = '__all__'  # or explicitly include: [..., 'order_items']
+
+    def create(self, validated_data):
+        order_items_data = validated_data.pop('order_items')
+        order = Order.objects.create(**validated_data)
+
+        for item_data in order_items_data:
+            OrderItems.objects.create(order=order, **item_data)
+
+        return order
+        

@@ -6,6 +6,7 @@ from employees.models import Employee
 from .serializers import EmployeeRegisterSerializer, EmployeeSerializer
 from .permissions import TopManagerUser
 from commerce.utils.base_views import StandardizedResponseMixin
+from commerce.utils.build_chunks import insert_employee_chunks
 
 
 class RegisterEmployee(StandardizedResponseMixin, mixins.CreateModelMixin,
@@ -18,7 +19,7 @@ class RegisterEmployee(StandardizedResponseMixin, mixins.CreateModelMixin,
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             employee = serializer.save()
-
+            insert_employee_chunks(employee)
             # 🔐 Set is_staff = True for manager roles
             role = request.data.get("role")
             if role in ["Customer_Service_Manager", "Top_Manager"]:

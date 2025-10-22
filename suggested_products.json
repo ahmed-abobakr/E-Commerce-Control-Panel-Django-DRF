@@ -1,0 +1,602 @@
+[
+  {
+    "category":"Fashoin",
+    "name":"Slim Fit Jeans",
+    "brand":"DenimMax",
+    "description":"Stylish slim-fit jeans for everyday wear."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Leather Jacket",
+    "brand":"UrbanEdge",
+    "description":"Classic leather jacket with premium finish."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Cotton T-Shirt",
+    "brand":"ComfortWear",
+    "description":"Soft cotton t-shirt available in many colors."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Summer Dress",
+    "brand":"BreezeStyle",
+    "description":"Lightweight dress perfect for summer."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Sports Sneakers",
+    "brand":"RunFast",
+    "description":"Breathable running sneakers."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Wool Scarf",
+    "brand":"CozyKnit",
+    "description":"Warm wool scarf for cold weather."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Baseball Cap",
+    "brand":"HeadZone",
+    "description":"Adjustable cap with sporty look."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Formal Blazer",
+    "brand":"SharpLook",
+    "description":"Elegant blazer for formal occasions."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Denim Skirt",
+    "brand":"BlueTrend",
+    "description":"Trendy skirt with denim fabric."
+  },
+  {
+    "category":"Fashoin",
+    "name":"Running Shorts",
+    "brand":"FitFlex",
+    "description":"Flexible shorts for active use."
+  },
+  {
+    "category":"Phone",
+    "name":"iPhone 14 Pro",
+    "brand":"Apple",
+    "description":"Flagship phone with powerful A16 chip."
+  },
+  {
+    "category":"Phone",
+    "name":"Galaxy S23",
+    "brand":"Samsung",
+    "description":"Top-tier Android with excellent camera."
+  },
+  {
+    "category":"Phone",
+    "name":"Pixel 7",
+    "brand":"Google",
+    "description":"Clean Android experience with AI features."
+  },
+  {
+    "category":"Phone",
+    "name":"Redmi Note 12",
+    "brand":"Xiaomi",
+    "description":"Budget phone with high performance."
+  },
+  {
+    "category":"Phone",
+    "name":"Nova Y90",
+    "brand":"Huawei",
+    "description":"Stylish and efficient Android device."
+  },
+  {
+    "category":"Phone",
+    "name":"Infinix Hot 30",
+    "brand":"Infinix",
+    "description":"Affordable smartphone with great display."
+  },
+  {
+    "category":"Phone",
+    "name":"Phone Tripod",
+    "brand":"SnapMount",
+    "description":"Tripod stand for stable mobile shots."
+  },
+  {
+    "category":"Phone",
+    "name":"Wireless Charger",
+    "brand":"ChargeEase",
+    "description":"Fast wireless charger pad."
+  },
+  {
+    "category":"Phone",
+    "name":"Phone Ring Holder",
+    "brand":"GripLoop",
+    "description":"Secure grip for all smartphones."
+  },
+  {
+    "category":"Phone",
+    "name":"Earbuds Pro",
+    "brand":"SoundX",
+    "description":"Wireless earbuds with noise cancellation."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Vitamin C Serum",
+    "brand":"GlowUp",
+    "description":"Brightening serum for radiant skin."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Moisturizing Cream",
+    "brand":"HydraSkin",
+    "description":"Hydrating cream for dry skin."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Beard Oil",
+    "brand":"ManEssence",
+    "description":"Natural oil for beard grooming."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Electric Toothbrush",
+    "brand":"SmileTech",
+    "description":"Rechargeable sonic toothbrush."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Hair Dryer",
+    "brand":"BlowPro",
+    "description":"Quick-dry hair dryer with ionic tech."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Aloe Gel",
+    "brand":"NatureSkin",
+    "description":"Soothing aloe vera gel."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Sunscreen SPF 50",
+    "brand":"SunGuard",
+    "description":"Broad-spectrum sun protection."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Lip Balm Set",
+    "brand":"KissSoft",
+    "description":"Hydrating lip balm pack."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Facial Cleanser",
+    "brand":"ClearGlow",
+    "description":"Foaming cleanser for daily use."
+  },
+  {
+    "category":"Health & Beauity",
+    "name":"Makeup Kit",
+    "brand":"BeautyBox",
+    "description":"Complete set for daily makeup."
+  },
+  {
+    "category":"Televisions",
+    "name":"55-inch 4K TV",
+    "brand":"Samsung",
+    "description":"Crystal clear UHD smart TV."
+  },
+  {
+    "category":"Televisions",
+    "name":"65-inch OLED TV",
+    "brand":"LG",
+    "description":"Stunning OLED display with deep blacks."
+  },
+  {
+    "category":"Televisions",
+    "name":"50-inch QLED",
+    "brand":"TCL",
+    "description":"Quantum-dot LED TV for vivid colors."
+  },
+  {
+    "category":"Televisions",
+    "name":"Bravia 43-inch",
+    "brand":"Sony",
+    "description":"Full HD smart TV with HDR."
+  },
+  {
+    "category":"Televisions",
+    "name":"Smart Android TV",
+    "brand":"Hisense",
+    "description":"Affordable smart TV with Android."
+  },
+  {
+    "category":"Televisions",
+    "name":"TV Wall Mount",
+    "brand":"WallGrip",
+    "description":"Adjustable wall mount bracket."
+  },
+  {
+    "category":"Televisions",
+    "name":"Universal Remote",
+    "brand":"Clicker",
+    "description":"All-in-one TV remote."
+  },
+  {
+    "category":"Televisions",
+    "name":"TV Soundbar",
+    "brand":"BoomBox",
+    "description":"Soundbar with subwoofer."
+  },
+  {
+    "category":"Televisions",
+    "name":"HDMI Cable 2m",
+    "brand":"WireLink",
+    "description":"High-speed HDMI cable."
+  },
+  {
+    "category":"Televisions",
+    "name":"TV Dust Cover",
+    "brand":"ShieldMax",
+    "description":"Protective cover for TVs."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Newborn Diapers",
+    "brand":"BabySoft",
+    "description":"Hypoallergenic diapers for infants."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Baby Wipes",
+    "brand":"CleanTots",
+    "description":"Gentle wipes for baby care."
+  },
+  {
+    "category":"Baby Products",
+    "name":"3-in-1 Stroller",
+    "brand":"MoveBaby",
+    "description":"Convertible baby stroller system."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Milk Bottle",
+    "brand":"Feedi",
+    "description":"Anti-colic feeding bottle."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Body Wash",
+    "brand":"TinyBath",
+    "description":"Tear-free body wash for babies."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Pacifier Set",
+    "brand":"CalmNip",
+    "description":"Soft silicone pacifiers."
+  },
+  {
+    "category":"Baby Products",
+    "name":"High Chair",
+    "brand":"LittleSeat",
+    "description":"Adjustable feeding chair."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Baby Monitor",
+    "brand":"WatchMe",
+    "description":"Audio\/video baby monitor."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Baby Blanket",
+    "brand":"WarmSnug",
+    "description":"Soft cotton blanket for newborns."
+  },
+  {
+    "category":"Baby Products",
+    "name":"Car Seat",
+    "brand":"SafeRide",
+    "description":"Infant car seat with padding."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Long Grain Rice 5kg",
+    "brand":"GrainField",
+    "description":"Premium long grain rice."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Sunflower Oil 1L",
+    "brand":"PureDrop",
+    "description":"Refined sunflower cooking oil."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Sugar 2kg",
+    "brand":"SweetFarm",
+    "description":"Granulated white sugar."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Black Tea Bags",
+    "brand":"BrewTime",
+    "description":"Rich flavor black tea."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Tomato Paste",
+    "brand":"RedGold",
+    "description":"Thick double-concentrated paste."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Laundry Detergent",
+    "brand":"CleanMax",
+    "description":"Powerful stain removal detergent."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Toilet Paper 10pk",
+    "brand":"Softy",
+    "description":"Ultra-soft toilet tissue."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Spaghetti 500g",
+    "brand":"PastaCo",
+    "description":"Italian style durum wheat spaghetti."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Table Salt 500g",
+    "brand":"SaltCo",
+    "description":"Fine table salt."
+  },
+  {
+    "category":"Supermarket",
+    "name":"Bottled Water 1.5L",
+    "brand":"HydroPure",
+    "description":"Natural mineral drinking water."
+  },
+  {
+    "category":"Computing",
+    "name":"Laptop Core i5",
+    "brand":"TechPro",
+    "description":"Mid-range laptop for productivity."
+  },
+  {
+    "category":"Computing",
+    "name":"Wireless Mouse",
+    "brand":"ClickFlow",
+    "description":"Ergonomic wireless mouse."
+  },
+  {
+    "category":"Computing",
+    "name":"Mechanical Keyboard",
+    "brand":"TypeFast",
+    "description":"RGB mechanical keyboard."
+  },
+  {
+    "category":"Computing",
+    "name":"USB-C Hub",
+    "brand":"PortLink",
+    "description":"Multiport USB-C expansion hub."
+  },
+  {
+    "category":"Computing",
+    "name":"External HDD 1TB",
+    "brand":"StoreIt",
+    "description":"Reliable external hard drive."
+  },
+  {
+    "category":"Computing",
+    "name":"Gaming Laptop",
+    "brand":"GamerX",
+    "description":"High-performance gaming laptop."
+  },
+  {
+    "category":"Computing",
+    "name":"Webcam 1080p",
+    "brand":"VisionCam",
+    "description":"HD webcam with microphone."
+  },
+  {
+    "category":"Computing",
+    "name":"27-inch Monitor",
+    "brand":"ViewSharp",
+    "description":"Full HD monitor for work."
+  },
+  {
+    "category":"Computing",
+    "name":"Cooling Pad",
+    "brand":"ChillZone",
+    "description":"Laptop cooling stand."
+  },
+  {
+    "category":"Computing",
+    "name":"Bluetooth Speaker",
+    "brand":"SoundDesk",
+    "description":"Wireless desktop speaker."
+  },
+  {
+    "category":"Sporting",
+    "name":"Running Shoes",
+    "brand":"TrackStar",
+    "description":"Lightweight running shoes."
+  },
+  {
+    "category":"Sporting",
+    "name":"Dumbbell Set",
+    "brand":"IronFit",
+    "description":"Adjustable dumbbells for home gym."
+  },
+  {
+    "category":"Sporting",
+    "name":"Yoga Mat",
+    "brand":"ZenMat",
+    "description":"Eco-friendly yoga mat."
+  },
+  {
+    "category":"Sporting",
+    "name":"Basketball",
+    "brand":"HoopMaster",
+    "description":"Official size outdoor ball."
+  },
+  {
+    "category":"Sporting",
+    "name":"Football Jersey",
+    "brand":"TeamWear",
+    "description":"Breathable team jersey."
+  },
+  {
+    "category":"Sporting",
+    "name":"Cycling Helmet",
+    "brand":"RideSafe",
+    "description":"Impact-resistant helmet."
+  },
+  {
+    "category":"Sporting",
+    "name":"Skipping Rope",
+    "brand":"JumpX",
+    "description":"Adjustable jump rope."
+  },
+  {
+    "category":"Sporting",
+    "name":"Tennis Racket",
+    "brand":"SwingAce",
+    "description":"Beginner-friendly racket."
+  },
+  {
+    "category":"Sporting",
+    "name":"Resistance Bands",
+    "brand":"FlexFit",
+    "description":"Set of 5 resistance bands."
+  },
+  {
+    "category":"Sporting",
+    "name":"Swimming Goggles",
+    "brand":"AquaVision",
+    "description":"Anti-fog goggles."
+  },
+  {
+    "category":"Gaming",
+    "name":"PlayStation 5",
+    "brand":"Sony",
+    "description":"Next-gen console with 4K support."
+  },
+  {
+    "category":"Gaming",
+    "name":"Xbox Series X",
+    "brand":"Microsoft",
+    "description":"Powerful console for hardcore gamers."
+  },
+  {
+    "category":"Gaming",
+    "name":"Nintendo Switch",
+    "brand":"Nintendo",
+    "description":"Hybrid handheld console."
+  },
+  {
+    "category":"Gaming",
+    "name":"Gaming Chair",
+    "brand":"SitPro",
+    "description":"Ergonomic chair with back support."
+  },
+  {
+    "category":"Gaming",
+    "name":"RGB Headset",
+    "brand":"SoundBlitz",
+    "description":"Gaming headset with surround sound."
+  },
+  {
+    "category":"Gaming",
+    "name":"Gaming Mouse",
+    "brand":"ClickPro",
+    "description":"High-DPI wired mouse."
+  },
+  {
+    "category":"Gaming",
+    "name":"Gamepad Controller",
+    "brand":"JoyMax",
+    "description":"Wireless controller for PC."
+  },
+  {
+    "category":"Gaming",
+    "name":"Streaming Mic",
+    "brand":"CastPro",
+    "description":"Microphone for game streaming."
+  },
+  {
+    "category":"Gaming",
+    "name":"Monitor 144Hz",
+    "brand":"SpeedView",
+    "description":"Fast refresh rate monitor."
+  },
+  {
+    "category":"Gaming",
+    "name":"Steam Gift Card",
+    "brand":"Valve",
+    "description":"Redeemable gift card for games."
+  },
+  {
+    "category":"Others",
+    "name":"Electric Kettle",
+    "brand":"BoilFast",
+    "description":"Stainless steel water boiler."
+  },
+  {
+    "category":"Others",
+    "name":"Air Purifier",
+    "brand":"BreatheEasy",
+    "description":"Removes dust and allergens."
+  },
+  {
+    "category":"Others",
+    "name":"LED Strip Lights",
+    "brand":"GlowFX",
+    "description":"Decorative smart LED lights."
+  },
+  {
+    "category":"Others",
+    "name":"Digital Thermometer",
+    "brand":"TempCheck",
+    "description":"Quick-read thermometer."
+  },
+  {
+    "category":"Others",
+    "name":"Portable Fan",
+    "brand":"CoolBreeze",
+    "description":"USB rechargeable pocket fan."
+  },
+  {
+    "category":"Others",
+    "name":"Sewing Machine",
+    "brand":"StitchMate",
+    "description":"Compact and easy to use."
+  },
+  {
+    "category":"Others",
+    "name":"Smartwatch",
+    "brand":"WristTech",
+    "description":"Fitness and notification tracker."
+  },
+  {
+    "category":"Others",
+    "name":"Tool Set 48pcs",
+    "brand":"FixIt",
+    "description":"Household tool kit."
+  },
+  {
+    "category":"Others",
+    "name":"Wall Clock",
+    "brand":"TickTock",
+    "description":"Modern silent wall clock."
+  },
+  {
+    "category":"Others",
+    "name":"Desk Organizer",
+    "brand":"NeatDesk",
+    "description":"All-in-one office organizer."
+  }
+]

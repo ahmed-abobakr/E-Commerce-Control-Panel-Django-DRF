@@ -5,6 +5,7 @@ from .serializers import CustomerSerilazer
 from customers.models import Customer
 from .permissions import CustomerServiceUserOrTopManagerUser
 from commerce.utils.base_views import StandardizedResponseMixin
+from commerce.utils.build_chunks import insert_customer_chunks
 
 
 class CustomerList(StandardizedResponseMixin,
@@ -16,12 +17,14 @@ class CustomerList(StandardizedResponseMixin,
     permission_class = [CustomerServiceUserOrTopManagerUser]
     
     def get(self, request, *args, **kwargs):
-        data = self.list(request, *args, **kwargs) 
+        data = self.list(request, *args, **kwargs)
+        insert_customer_chunks(data.data) 
         return self.success_response(data= data.data, message= "success")
         
 
     def post(self, request, *args, **kwargs):
         data = self.create(request, *args, **kwargs)
+        
         return self.success_response(data=data.data, message="success")
     
     

@@ -3,7 +3,7 @@ name: django-commerce
 
 services:
   inventory_db:
-    image: postgres:15.14-alpine3.21
+    image: pgvector/pgvector:pg15-trixie
     container_name: inventory_db
     env_file:
       - ./.env
@@ -11,6 +11,7 @@ services:
       - "5432:5432" 
     volumes:
       - ./postgres/scripts:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -26,3 +27,6 @@ services:
   #   image: django
   #   container_name: django_commerce2
   #   command: python manage.py runserver 0.0.0.0:8000
+
+volumes:
+  postgres_data:
