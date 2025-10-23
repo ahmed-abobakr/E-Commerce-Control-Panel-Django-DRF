@@ -4,7 +4,6 @@ name: django-commerce
 services:
   inventory_db:
     image: postgres:15.14-alpine3.21
-    container_name: inventory_db
     env_file:
       - ./.env
     ports: 
@@ -17,12 +16,15 @@ services:
     restart: always
     ports:
       - "8080:8080"      
-  # app:
-  #   build: .
-  #   volumes:
-  #     - .:/django
-  #   ports:
-  #     - "8000:8000"
-  #   image: django
+  web:
+   build: .
+   command: python manage.py runserver 0.0.0.0:8000  
+   volumes:
+     - .:/code
+   ports:
+     - "8000:8000"
+   depends_on:
+      - inventory_db
+  #  image: django
   #   container_name: django_commerce2
   #   command: python manage.py runserver 0.0.0.0:8000
