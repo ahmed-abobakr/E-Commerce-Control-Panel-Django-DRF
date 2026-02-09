@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'customers',
     'employees',
     'orders',
+    'smolagent',
     'rest_framework',
 ]
 

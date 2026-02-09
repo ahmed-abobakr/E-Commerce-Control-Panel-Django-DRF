@@ -1,63 +1,63 @@
-from datetime import timedelta
-from django.utils.timezone import now
-from django.db.models import Sum, F
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.core.exceptions import PermissionDenied
 
 
 from orders.models import Order, OrderItems
-from customers.models import Customer
-from .serializers import OrderSerializer, OrderItemsSerializer, OrderCreateSerializer
-from .pagination import OrderPagination
+from .serializers import OrderItemsSerializer, OrderCreateSerializer
 from employees.api.permissions import CustomerServiceUserOrTopManagerUserOrReadOnly
 from commerce.utils.base_views import StandardizedResponseMixin
-from commerce.utils.build_chunks import insert_order_and_items_chunks
-from commerce.services.rag import recommend_products_for_customer, build_recommendation_message, build_discount_message_for_customer, build_order_explain_prompt
+from . import services
     
 
 
 class OrderListViewSet(StandardizedResponseMixin, viewsets.ModelViewSet):
     queryset = OrderItems.objects.all()
-    #serializer_class = OrderItemsSerializer
-    pagination_class = OrderPagination
     permission_class = [CustomerServiceUserOrTopManagerUserOrReadOnly]
-    
     
     def get_serializer_class(self):
         if self.action == 'create':
             return OrderCreateSerializer
         return OrderItemsSerializer  # default serializer for GET, etc.
     
-    
     def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        return self.success_response(data=response.data, message="success")
+        print("first line of Orderlist function")
+        queryset = self.get_queryset().select_related('order', 'product')
+        orders_qs = Order.objects.filter(
+            id__in=queryset.values_list('order_id', flat=True).distinct()
+        ).order_by('id')
+        page = self.paginate_queryset(orders_qs)
+        data = services.get_paginated_orders_with_products(request, queryset, page)
+        #paginated_response = self.get_paginated_response(data)
+        return self.success_response(data=data, message="success")
+
+        # If pagination is active, use DRF’s paginated response
+        paginated_response = self.get_paginated_response(response_data)
+
+        # Wrap it in standardized success response
+        return self.success_response(
+            data=paginated_response.data,
+            message="success"
+        )
 
     def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
-        return self.success_response(data=response.data, message="success")
+        data = services.get_order_with_products(request, self.get_object())
+        return self.success_response(data=data, message="success")
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        order = serializer.save()  # calls create() inside the serializer
-        response = OrderSerializer(order)  # for clean output
-        insert_order_and_items_chunks(response.data)
+        request_data = request.data.copy()
+        request_data["created_by"] = request.user.id
+        serializer = self.get_serializer(data=request_data)
         try:
-            customer = Customer.objects.get(id=response.data['customer']['id'])
-        except Customer.DoesNotExist:
-            msg = None
-
-        recs, context = recommend_products_for_customer(customer, k=6)
-        print(f"recs: {recs}")
-        # Add new custom fields
-        response_data = response.data.copy()
-        response_data["recommended_products"] = [r['title'] for r in recs]
-
-        
-        response_data["recommendation_message"] = build_recommendation_message(customer, recs, context)
-        return self.success_response(data=response_data, message="success", status_code=201)
+            data = services.create_order_and_recommend(request, serializer)
+            return self.success_response(data=data, message="success", status_code=201) 
+        except PermissionDenied:
+            return self.error_response(
+                data=None,
+                message="You are not authorized to create orders",
+                status_code=403
+            )
 
     def destroy(self, request, *args, **kwargs):
         super().destroy(request, *args, **kwargs)
@@ -77,41 +77,14 @@ class DiscountMessageView(APIView):
     permission_class = [CustomerServiceUserOrTopManagerUserOrReadOnly]
 
     def get(self, request):
-        t0 = now() - timedelta(days=7)
         amount_min = float(request.query_params.get("amount_min", 1000))
         k = int(request.query_params.get("k", 5))
-
-        # Segment customers
-        spend = (Order.objects
-                 .filter(created_at__gte=t0, status__in=["Order_Finished","Order_Delivered"])
-                 .values("customer_id")
-                 .annotate(total_week=Sum("grand_price"))
-                 .filter(total_week__gt=amount_min)
-                 .order_by("-total_week"))
-        print(f"spend: {spend}")
-        results = []
-        for row in spend:
-            try:
-                customer = Customer.objects.get(id=row["customer_id"])
-            except Customer.DoesNotExist:
-                continue
-            recs, context = recommend_products_for_customer(customer, k=k)
-            msg = None
-            if request.query_params.get("with_text") == "1":
-                msg = build_discount_message_for_customer(customer, recs, context, policy={
-                    "discount_pct": 15,
-                    "deadline": "3 days from now",
-                    "exclusions": "excludes already discounted items"
-                })
-            results.append({
-                "customer_id": customer.id,
-                "customer_name": f"{customer.first_name} {customer.last_name}",
-                "total_week": row["total_week"],
-                "suggestions": recs,
-                "message": msg
-            })
-
-        return Response({"count": len(results), "data": results})   
+        with_text = request.query_params.get("with_text") == "1"
+        try:
+            results = services.build_discount_messages(request, amount_min, k, with_text)
+            return Response({"count": len(results), "data": results})
+        except PermissionDenied:
+            return Response({"error": "You are not authorized to get discount messages"}, status=403)
     
     
 class OrderExplainMessageView(APIView):
@@ -126,33 +99,10 @@ class OrderExplainMessageView(APIView):
         order_id = request.query_params.get("order_id")
         if not order_id:
             return Response({"error": "order_id is required"}, status=400)
-
         try:
-            o = (Order.objects
-                 .select_related("customer")
-                 .get(id=order_id))
-        except Order.DoesNotExist:
-            return Response({"error": "order not found"}, status=404)
-        print(f"order: {o}")
-        items = list(OrderItems.objects.filter(order=o)
-                     .values("product__title", "quantity", "product__price"))
-        # Build structured context (no sensitive PII)
-        context_rows = [
-            f"- {r['product__title']} x{r['quantity']} @ {r['product__price']}"
-            for r in items
-        ]
-        order_snapshot = (
-            f"Order#{o.id} | status={o.status} | payment={o.payment_status} | "
-            f"grand={o.grand_price} | address={(o.address or '')[:64]}..."
-        )
-
-        
-
-        data = build_order_explain_prompt(o, context_rows)
-        
-
-        return Response({
-            "order_id": o.id,
-            "message": data["message"],
-            "evidence": [{"id": c["id"], "source": c["source"], "distance": c["distance"]} for c in data["retrieved"]]
-        })     
+            result, error = services.get_order_explanation(request, order_id)
+            if error:
+                return Response(error, status=404)
+            return Response(result)
+        except PermissionDenied:
+            return Response({"error": "You are not authorized to get order explanation"}, status=403)

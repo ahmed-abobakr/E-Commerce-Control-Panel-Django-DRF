@@ -17,7 +17,9 @@ class RegisterEmployee(StandardizedResponseMixin, mixins.CreateModelMixin,
     
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        print(f"add employee: {request.data}")
         if serializer.is_valid():
+            print("serializer valid")
             employee = serializer.save()
             insert_employee_chunks(employee)
             # 🔐 Set is_staff = True for manager roles
@@ -39,8 +41,8 @@ class RegisterEmployee(StandardizedResponseMixin, mixins.CreateModelMixin,
                 }
             }
             return self.success_response(data=response_data, status_code=status.HTTP_201_CREATED, message="success")
-
-        return self.error_response(data=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST, message="fail")
+        print(f"serialzier errors: {serializer.errors}")
+        return self.error_response(status_code=status.HTTP_400_BAD_REQUEST, message="fail")
     
     
 class ListEmployees(StandardizedResponseMixin, mixins.ListModelMixin,

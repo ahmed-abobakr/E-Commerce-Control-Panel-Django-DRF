@@ -17,20 +17,33 @@ def ins(cur, etype, eid, source, text):
       INSERT INTO admin_chunk (entity_type, entity_id, source, text, embedding)
       VALUES (%s, %s, %s, %s, %s::vector)
     """, [etype, eid, source, text, f"[{','.join(map(str, emb))}]"])
-    
+
 def insert_product_chunks(product):
     with connection.cursor() as cur:
-        print("with connection in of insert product chunks")
-            # Products
         try:
-            p = Product.objects.select_related("category","created_by").get(title=product['title'], brand=product['brand'],
-                                                                            price=product['price'], stock_count=product['stock_count'], rating=product['rating'])    
+            p = product
             base = f"Product: {p.title} | Brand: {p.brand} | Category: {p.category.name} | Price: {p.price} | Stock: {p.stock_count} | Rating: {p.rating}"
             ins(cur, "product", p.id, "product.header", base)  # :contentReference[oaicite:16]{index=16}
             ins(cur, "product", p.id, "product.description", p.description or "")  # :contentReference[oaicite:17]{index=17}
         except Exception as e:
             print(f"insert product chunk error: {e}")
     return "Product Admin chunks built."
+
+
+def delete_product_chunks(product_id):
+    with connection.cursor() as cur:
+        try:
+            cur.execute(
+                """
+                DELETE FROM admin_chunk 
+                WHERE entity_type = %s AND entity_id = %s
+                """, 
+                ["product", product_id]
+            )
+            print(f"Deleted chunks for product {product_id}")
+        except Exception as e:
+            print(f"Error deleting product chunks: {e}")
+    return "Product Admin chunks deleted."
 
 
 def insert_category_chunks(category):
@@ -66,6 +79,22 @@ def insert_order_and_items_chunks(order):
             print(f"insert Order and Order Items chunk error: {e}")
     return "Order Admin chunks built."   
 
+
+def delete_order_chunks(order_id):
+    with connection.cursor() as cur:
+        try:
+            cur.execute(
+                """
+                DELETE FROM admin_chunk
+                WHERE entity_type = %s AND entity_id = %s
+                """,
+                ["order", order_id]
+            )
+            print(f"Deleted chunks for order {order_id}")
+        except Exception as e:
+            print(f"Error deleting order chunks: {e}")
+    return "Order Admin chunks deleted."
+
 def insert_employee_chunks(employee):
     with connection.cursor() as cur:
         print("with connection in of insert product chunks")
@@ -89,6 +118,4 @@ def insert_customer_chunks(customer):
                     f"Customer: {cu.first_name} {cu.last_name}")  # :contentReference[oaicite:21]{index=21}
         except Exception as e:
             print(f"insert customer chunk error: {e}")
-    return "Customer Admin chunks built."          
-        
-
+    return "Customer Admin chunks built."

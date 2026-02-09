@@ -1,62 +1,91 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.core.exceptions import PermissionDenied
 
 
-from products.models import Product
+from .services import (
+    create_product, update_product, delete_product, get_restock_advice, list_products, get_product
+)
 from .serializers import ProductSerializer
 from .pagination import ProductPagination
 from employees.api.permissions import CustomerServiceManagerOrTopManagerUserOrReadOnly
 from commerce.utils.base_views import StandardizedResponseMixin
-from commerce.utils.build_chunks import insert_product_chunks
-from commerce.services.rag import build_restock_prompt, search_admin_chunks, llm_chat
 
 class ProductReadOnlyViewSet(StandardizedResponseMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = ProductPagination
     
     def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        return self.success_response(data=response.data, message="success")
+        queryset = list_products()
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        paginated_data = self.get_paginated_response(serializer.data)
+        return self.success_response(data=paginated_data.data, message="success")
 
     def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
-        return self.success_response(data=response.data, message="success")
+        product_id = kwargs.get("pk")
+        product = get_product(product_id)
+        if not product:
+            return self.error_response(message="Product not found", status_code=404)
+
+        serializer = self.get_serializer(product)
+        return self.success_response(data=serializer.data, message="success")
     
     
 class ProductViewSet(StandardizedResponseMixin, viewsets.ModelViewSet):
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = ProductPagination
     permission_class = [CustomerServiceManagerOrTopManagerUserOrReadOnly]
     
     def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        return self.success_response(data=response.data, message="success")
+        queryset = list_products()
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        paginated_data = self.get_paginated_response(serializer.data)
+        return self.success_response(data=paginated_data.data, message="success")
 
     def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, *args, **kwargs)
-        return self.success_response(data=response.data, message="success")
+        product_id = kwargs.get("pk")
+        product = get_product(product_id)
+        if not product:
+            return self.error_response(message="Product not found", status_code=404)
+
+        serializer = self.get_serializer(product)
+        return self.success_response(data=serializer.data, message="success")
     
     def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
+        data = request.data.copy()
+        data["created_by"] = request.user.id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
         try:
-            print("view before insert product chunks")
-            message = insert_product_chunks(response.data)
-        except Exception as e:
-            print(f"Error creating product: {e}")
-            message = "Error building product chunks"
-        print(message)    
-        return self.success_response(data=response.data, message="success", status_code=201)
+            product = create_product(request, serializer.validated_data)
+            serializer = self.get_serializer(product)
+            return self.success_response(data=serializer.data, message="success", status_code=201)
+        except PermissionDenied:
+            return self.error_response(message="Permission denied", status_code=403)
 
     def destroy(self, request, *args, **kwargs):
-        super().destroy(request, *args, **kwargs)
-        return self.success_response(data=None, message="success", status_code=204)
+        product_id = kwargs.get("pk")
+        try:
+            delete_product(request, product_id)
+            return self.success_response(data=None, message="success", status_code=204)
+        except PermissionDenied:
+            return self.error_response(message="Permission denied", status_code=403)
     
     def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
-        return self.success_response(data=response.data, message="success")
+        data = request.data.copy()
+        data["created_by"] = request.user.id
+        product_id = kwargs.get("pk")
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            product = update_product(request, product_id, serializer.validated_data)
+            serializer = self.get_serializer(product)
+            return self.success_response(data=serializer.data, message="success")
+        except PermissionDenied:
+            return self.error_response(message="Permission denied", status_code=403)
 
 class RestockAdvisorView(APIView):
     """
@@ -78,28 +107,8 @@ class RestockAdvisorView(APIView):
         q = request.query_params.get("q", f"restock candidates for category {cat_name}")
 
         # SQL pre-filter: low stock & high rating in category
-        qs = (Product.objects
-              .filter(category=cat_name, stock_count__lt=threshold)
-              .values("id", "title", "stock_count", "price", "rating")
-              .order_by("stock_count"))
-
-        rows = list(qs)
-        print(f"result: {rows}")
-        if not rows:
-            return Response({"count": 0, "data": [], "advice": None})
-
-        # Semantic rank over admin_chunk (entity_type=product) using q
-        retrieved = search_admin_chunks(q, k=50, entity_type="product")
-        # Prioritize items present in rows
-        ids = {r["id"] for r in rows}
-        ranked = [c for c in retrieved if c["entity_id"] in ids][:k]
-
-        advice = build_restock_prompt(cat_name, rows, ranked)
-
-        return Response({
-            "count": len(rows),
-            "filtered": rows[:50],  # preview
-            "top_ranked": [{"product_id": c["entity_id"], "source": c["source"], "distance": c["distance"]}
-                           for c in ranked],
-            "advice": advice
-        })        
+        try:
+            advice_data = get_restock_advice(request, cat_name, threshold, k, q)
+            return Response(advice_data)
+        except PermissionDenied:
+            return self.error_response(message="Permission denied", status_code=403)

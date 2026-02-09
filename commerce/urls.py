@@ -24,4 +24,5 @@ urlpatterns = [
     path('employees/api/', include('employees.api.urls')),
     path('products/api/', include('products.api.urls')),
     path('orders/api/', include('orders.api.urls')),
+    path('ai_agent/api/', include('smolagent.api.urls')),
 ]
