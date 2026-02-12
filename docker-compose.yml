@@ -26,9 +26,21 @@ services:
      - "8000:8000"
    depends_on:
       - inventory_db
+      - phoenix
+   environment:
+      # Point OTel to the Phoenix container (service name 'phoenix')
+      - PHOENIX_COLLECTOR_ENDPOINT=http://phoenix:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://phoenix:4317
+      - OTEL_SERVICE_NAME=my-djongo-agent   
   #  image: django
   #   container_name: django_commerce2
   #   command: python manage.py runserver 0.0.0.0:8000
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006" # The UI
+      - "4317:4317" # OTel gRPC collector
+      - "9090:9090" # Prometheus (optional)
 
 volumes:
   postgres_data:

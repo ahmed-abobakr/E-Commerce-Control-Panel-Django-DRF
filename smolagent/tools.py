@@ -9,6 +9,16 @@ from categories.models import Category
 load_dotenv()
 
 INTERNAL_API_TOKEN = os.getenv("INTERNAL_API_TOKEN")
+
+_AGENT_CONTEXT = {}
+
+def set_agent_context(ctx: dict):
+    global _AGENT_CONTEXT
+    _AGENT_CONTEXT = ctx
+
+def get_agent_context():
+    return _AGENT_CONTEXT
+
 def run_backend_tool(func_name, params, context):
     """Call the internal backend function runner and return a normalized response.
 
@@ -90,39 +100,37 @@ def run_backend_tool(func_name, params, context):
     }
 
 @tool
-def get_all_products(request: requests.Request) -> list:
+def get_all_products() -> list:
     """
-    Get list of All Products 
-    Args:
-        request: Django Request Object   
+    Get list of All Products    
     Returns:
         list of products each product is dict contains id, title, price, description, stock_count, category_detail which contins id, name and parent_id of categorty
     """
-    return run_backend_tool("get_all_products", {}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("get_all_products", {}, ctx)
 
 
 
 @tool
-def get_product_by_product_id(request: requests.Request, product_id: str) -> dict:
+def get_product_by_product_id(product_id: str) -> dict:
     """
     Get Product by Product ID   
      
     Args:
-        request: Django Request Object
         product_id: Product ID
 
     Returns:
         dict: Product Details contains id, title, price, description, stock_count, category_detail which contins id, name and parent_id of categorty
     """
-    return run_backend_tool("get_product_by_product_id", {"product_id": product_id}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("get_product_by_product_id", {"product_id": product_id}, ctx)
 
 
 @tool
-def create_product(request: requests.Request, title: str, price: float, description: str, stock_count: int, category_id: int, brand: str, rating: int) -> dict:
+def create_product(title: str, price: float, description: str, stock_count: int, category_id: int, brand: str, rating: int) -> dict:
     """
     Create a New Product
     Args:
-        request: Django Request Object
         title: Product Title
         price: Product Price
         description: Product Description
@@ -134,16 +142,16 @@ def create_product(request: requests.Request, title: str, price: float, descript
     Returns:
         dict: Product Details contains id, title, price, description, stock_count, category_detail which contins id, name and parent_id of categorty
     """
+    ctx = get_agent_context()
     return run_backend_tool("add_new_product", {"title": title, "price": price, "description": description, "stock_count": stock_count, "category_id": category_id, "brand": brand, "rating": rating},
-                            {'agent_token': request.headers.get('Authorization')})
+                            ctx)
 
 
 @tool
-def update_product(request: requests.Request, product_id: str, title: str, price: float, description: str, stock_count: int, category_id: int, brand: str, rating: int) -> dict:
+def update_product(product_id: str, title: str, price: float, description: str, stock_count: int, category_id: int, brand: str, rating: int) -> dict:
     """
     Update Product Details    
     Args:
-        request: Django Request Object
         product_id: Product ID
         title: Product Title
         price: Product Price
@@ -156,30 +164,30 @@ def update_product(request: requests.Request, product_id: str, title: str, price
     Returns:
         dict: Product Details contains id, title, price, description, stock_count, category_detail which contins id, name and parent_id of categorty
     """
+    ctx = get_agent_context()
     return run_backend_tool("update_product", {"product_id": product_id, "title": title, "price": price, "description": description, "stock_count": stock_count, "category_id": category_id, "brand": brand,"rating": rating},
-                            {'agent_token': request.headers.get('Authorization')})
+                            ctx)
 
 @tool
-def delete_product(request: requests.Request, product_id: str) -> bool:
+def delete_product(product_id: str) -> bool:
     """
     Delete Product by Product ID    
     Args:
-        request: Django Request Object
         product_id: Product ID
 
     Returns:
         True for found and Deleted product
         False for not found product
     """
-    return run_backend_tool("delete_product", {"product_id": product_id}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("delete_product", {"product_id": product_id}, ctx)
 
 
 @tool
-def get_advice_for_restock_products(request: requests.Request, category: Category, threshold: int, max_products: int) -> dict:
+def get_advice_for_restock_products(category: Category, threshold: int, max_products: int) -> dict:
     """
     Get Restock Advice for Products in Category    
     Args:
-        request: Django Request Object
         category: Category Object to be  like {"category": {"id": 1, "name": "Electronics", "parent_id": null}}
         threshold: Threshold Stock Count
         max_products: Max Products to Recommend
@@ -187,52 +195,51 @@ def get_advice_for_restock_products(request: requests.Request, category: Categor
     Returns:
         json contains count of products to restock, filtered which list of products need to restock, top_ranked list of top product Ids and advice which is string for products should be asked to restock
     """
+    ctx = get_agent_context()
     return run_backend_tool("get_advice_for_restock_products", {"category": {"id": category['id'], "name": category['name'], "parent_id": category['parent_id']}, "threshold": threshold, "max_products": max_products}, 
-                            {'agent_token': request.headers.get('Authorization')})
+                            ctx)
     
 @tool
-def get_all_categories(request: requests.Request) -> list:
+def get_all_categories() -> list:
     """
-    Get list of All Categories
-    Args:
-        request: Django Request Object    
+    Get list of All Categories    
     Returns:
         list of categories each category is dict contains id, name, parent_category_id
     """
-    response = run_backend_tool("list_categories", {}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    response = run_backend_tool("list_categories", {}, ctx)
     print(f"get_all_categories response: {response}")
     return response
 
 
 @tool
-def get_category_by_id(request: requests.Request, category_id: str) -> dict:
+def get_category_by_id(category_id: str) -> dict:
     """
     Get Category by Category ID    
     Args:
-        request: Django Request Object
         category_id: Category ID
 
     Returns:
         dict: Category Details contains id, name, parent_category_id
     """
-    return run_backend_tool("get_category_by_id", {"category_id": category_id}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("get_category_by_id", {"category_id": category_id}, ctx)
 
 
 @tool
-def get_order_by_id(request: requests.Request, order_id: str) -> dict:
+def get_order_by_id(order_id: str) -> dict:
     """
     Get Order details with products by Order ID
     Args:
-        request: Django Request Object
         order_id: Order ID
     Returns:
         dict: Order details with products
     """
-    return run_backend_tool("get_order_explanation", {"order_id": order_id}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("get_order_explanation", {"order_id": order_id}, ctx)
 
 @tool
 def create_order(
-    request: requests.Request,
     sub_total: float,
     tax_total: float,
     shipping_price: float,
@@ -252,7 +259,6 @@ def create_order(
     or as human-readable names (str). It also tolerates multiple shapes for product inputs.
 
     Args:
-        request: Django Request Object
         sub_total: Order subtotal
         tax_total: Tax amount
         shipping_price: Shipping cost
@@ -272,7 +278,7 @@ def create_order(
         On success: dict order details (backend `result`)
         On failure: dict with stable error fields: ok/function/status_code/error/details/hint
     """
-    ctx = {"agent_token": request.headers.get("Authorization")}
+    ctx = get_agent_context()
 
     def _fail(msg: str, details=None, hint: str = ""):
         return {
@@ -481,83 +487,82 @@ def create_order(
     return result
 
 @tool
-def get_order_explanation(request: requests.Request, order_id: str) -> dict:
+def get_order_explanation(order_id: str) -> dict:
     """
     Get AI explanation for an order
     Args:
-        request: Django Request Object
         order_id: Order ID
     Returns:
         dict: Explanation and evidence
     """
-    return run_backend_tool("get_order_explanation", {"order_id": order_id}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("get_order_explanation", {"order_id": order_id}, ctx)
 
 @tool
-def build_discount_message(request: requests.Request, customer_id: int) -> dict:
+def build_discount_message(customer_id: int) -> dict:
     """
     Build discount message for a customer
     Args:
-        request: Django Request Object
         customer_id: Customer ID
     Returns:
         dict: Discount recommendations
     """
-    return run_backend_tool("build_discount_message", {"customer_id": customer_id}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("build_discount_message", {"customer_id": customer_id}, ctx)
 
 @tool
-def get_all_customers(request: requests.Request) -> list:
+def get_all_customers() -> list:
     """
     Get list of all customers
-    Args:
-        request: Django Request Object
     Returns:
         list of customer details
     """
-    return run_backend_tool("get_all_customers", {}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("get_all_customers", {}, ctx)
 
 @tool
-def get_customer_by_id(request: requests.Request, customer_id: str) -> dict:
+def get_customer_by_id(customer_id: str) -> dict:
     """
     Get customer details by ID
     Args:
-        request: Django Request Object
         customer_id: Customer ID
     Returns:
         dict: Customer details
     """
-    return run_backend_tool("get_customer_by_id", {"customer_id": customer_id}, {'agent_token': request.headers.get('Authorization')})
+    ctx = get_agent_context()
+    return run_backend_tool("get_customer_by_id", {"customer_id": customer_id}, ctx)
 
 @tool
-def search_customers(request: requests.Request, name: str, phone: str = None, address: str = None) -> list:
+def search_customers(name: str, phone: str = None, address: str = None) -> list:
     """
     Search customers by name and optionally phone/address
     Args:
-        request: Django Request Object
         name: Search query for customer name
         phone: Optional phone number filter
         address: Optional address filter
     Returns:
         list of matching customers
     """
+    ctx = get_agent_context()
     params = {"name": name}
     if phone:
         params["phone"] = phone
     if address:
         params["address"] = address
-    return run_backend_tool("search_customers", params, {'agent_token': request.headers.get('Authorization')})
+    return run_backend_tool("search_customers", params, ctx)
 
 @tool
-def get_product_by_product_name_or_brand(request: requests.Request, name: str, brand: str = None) -> list:
+def get_product_by_product_name_or_brand(name: str, brand: str = None) -> list:
     """
     Get products by name and optionally brand
     Args:
-        request: Django Request Object
         name: Product name search query
         brand: Optional brand filter
     Returns:
         list of matching products
     """
+    ctx = get_agent_context()
     params = {"name": name}
     if brand:
         params["brand"] = brand
-    return run_backend_tool("get_product_by_product_name_or_brand", params, {'agent_token': request.headers.get('Authorization')})
+    return run_backend_tool("get_product_by_product_name_or_brand", params, ctx)

@@ -2,15 +2,16 @@ import os
 from dotenv import load_dotenv
 import yaml
 
-from smolagents import InferenceClientModel, LiteLLMModel, CodeAgent
+from smolagents import InferenceClientModel, LiteLLMModel, ToolCallingAgent
 from smolagents.memory import ActionStep, TaskStep, PlanningStep # Import specific memory step types
+from openinference.instrumentation.smolagents import SmolagentsInstrumentor
 
 
 from .tools import (
         get_all_products, get_product_by_product_id, update_product, delete_product,
         get_advice_for_restock_products, get_all_categories, get_category_by_id, create_product, 
         get_order_by_id, create_order, get_order_explanation,  build_discount_message, get_all_customers,
-        get_customer_by_id, search_customers, get_product_by_product_name_or_brand          
+        get_customer_by_id, search_customers, get_product_by_product_name_or_brand, set_agent_context          
                     )
 
 load_dotenv()
@@ -18,65 +19,77 @@ load_dotenv()
 """ with open("system_prompts.yaml", 'r') as stream:
     system_prompt = yaml.safe_load(stream) """
 system_prompt = """
-You are an AI E-Commerce Management Agent. 
-    Your ONLY source of truth is the tools provided to you. 
-    You MUST follow these rules STRICTLY:
+You are an AI operational agent connected to a backend system via strictly defined tools.
+You DO NOT invent data, guess results, or simulate backend behavior.
 
-    1. ✅ ALWAYS call tools to get information.
-        - Do NOT assume or generate product, category, stock, customer, employee or order data.
-        - Do NOT infer results, do NOT fabricate IDs, names, prices, counts, or details.
+GENERAL RULES
+- You MUST use tools whenever the request involves products, categories, customers, orders, stock, discounts, or backend data.
+- The backend tools are the single source of truth.
+- Never fabricate IDs, prices, quantities, or order states.
+- Never output raw JSON, internal payloads, headers, or tool responses to the user.
+- Convert backend results into clear, human-readable explanations.
 
-    2. ✅ You MUST use a tool whenever the user asks for:
-        - product information
-        - category information
-        - customer information
-        - employee information
-        - restock advice
-        - product creation, update, or deletion
-        - any data from the e-commerce database
+TOOL USAGE RULES
+- Tools may succeed or fail.
+- Every tool returns a structured response.
+- If a tool returns:
+  - ok = true → proceed using the returned data.
+  - ok = false → DO NOT stop. Read the error message and hint carefully.
+- When ok = false:
+  1. Analyze what went wrong (missing field, wrong type, invalid ID, logic issue).
+  2. Correct the input parameters.
+  3. Retry the SAME tool with fixed arguments.
+- Retry at most 2 times.
+- If the failure persists, explain the issue to the user in plain language and ask for clarification if needed.
 
-    3. ✅ NEVER invent information that does not come from a tool result.
-        If the tool returns NULL, EMPTY LIST, or an ERROR, you must clearly state it.
+INPUT VALIDATION & CORRECTION
+- If the user request is ambiguous or missing required information:
+  - Ask a clarification question BEFORE calling any tool.
+- If the user intent is clear but parameters are malformed:
+  - Fix the parameters silently and proceed.
+- If the user provides names instead of IDs:
+  - Use search or lookup tools to resolve IDs first.
 
-    4. ✅ NEVER output raw JSON to the user.
-        After you call a tool:
-            - Read the JSON result from the tool.
-            - DO NOT paste it as JSON.
-            - Instead, describe it in natural language. 
-            Example:
-                "The tool returned a product with ID 12, name 'Laptop', price 950."
+ORDER & BUSINESS LOGIC
+- For order creation:
+  - Always validate products and quantities.
+  - Ensure order_items is an array of objects with product_id and quantity.
+  - Never assume stock availability unless confirmed by backend response.
+- For updates or deletes:
+  - Confirm the entity exists before acting.
 
-    5. ✅ If the tool returns a list of items:
-       - Describe each item briefly.
-       - Do NOT show JSON formatting, brackets, or quotes.
+ERROR HANDLING POLICY
+- Backend errors are NOT user-visible.
+- Translate errors into user-friendly explanations.
+- Never expose stack traces, exception names, internal URLs, or tokens.
+- If an operation cannot be completed safely, explain why and suggest next steps.
 
-    6. ✅ If the user asks something that cannot be answered using tools:
-       - Ask a clarifying question OR
-       - Inform the user that you require more details before selecting a tool.
+RESPONSE STYLE
+- Be concise, professional, and business-oriented.
+- Explain actions taken when helpful.
+- Confirm successful operations clearly.
+- Ask follow-up questions only when strictly required.
 
-    7. ✅ You MUST NOT call multiple tools together unless absolutely required.
-       Think step-by-step.
+SECURITY & ACCESS
+- You only act within allowed backend functions.
+- You never attempt unauthorized operations.
+- You never explain internal authentication, headers, or tokens.
 
-    8. ✅ You MUST NOT execute fictional operations or business logic.
-       ALL logic must come from tool outputs only.
+FINAL CHECK
+Before responding to the user:
+- Did I rely on a tool when needed?
+- Did I handle tool failure correctly?
+- Did I avoid leaking internal structure or JSON?
+- Is the response understandable by a non-technical user?
 
-    9. ✅ Your responses must be short, clear, and business-friendly. 
-       Prefer bullet points for item lists.
-       
-    10. ✅ You Must Not create multiple Products with same product title and same product brand
-    
-    11. ✅ Always follow user instrunction when creating or updating items in database
-    
-    12. ✅ You Must Not create multiple orders with same products title and same products brand and same customer Name
-
-    Your job is to act as the middleware between the user and the database tools, describing the results returned by the tools in natural language with NO JSON output.
-    make the final answer only  like request language
 """    
 
 HF_TOKEN=os.getenv("HF_TOKEN")
 
 def run_smolagent(request, query, keep_memory=False):
+    set_agent_context({"agent_token": request.headers.get("Authorization", "")})
     import json
+    SmolagentsInstrumentor().instrument()
     #llm_model = InferenceClientModel(model_id="Qwen/Qwen2.5-Coder-32B-Instruct", token=HF_TOKEN) 
     llm_model = LiteLLMModel(model_id="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"))
     tools=[
@@ -85,18 +98,16 @@ def run_smolagent(request, query, keep_memory=False):
         get_order_by_id, create_order, get_order_explanation,  build_discount_message, get_all_customers,
         get_customer_by_id, search_customers, get_product_by_product_name_or_brand,           
     ]  
-    agent = CodeAgent(
+    agent = ToolCallingAgent(
         tools=tools,
         model=llm_model,
-        stream_outputs=True,
         verbosity_level=1,
-        additional_authorized_imports=['json'],
         max_steps = 10,
         #prompt_templates=system_prompt
     )
     print(f"agent initialized")
     prompt = f"""{system_prompt} \n\n User: {query} """
-    respone = agent.run(prompt, additional_args={'request': request}, 
+    respone = agent.run(prompt,
                         reset= not keep_memory #resest parameter is True for not saving memory, false saving memory for the same context
                         )
     print(f"Total steps in memory: {len(agent.memory.steps)}")
